@@ -26,7 +26,7 @@ def generate(prompt: str) -> str:
         ),
     )
 
-    return response.text.strip()
+    return response.text.stream()
 
 
 # if __name__ == "__main__":
