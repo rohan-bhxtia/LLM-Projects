@@ -14,7 +14,8 @@ client = genai.Client(
 
 def generate(prompt: str) -> str:
 
-    response = client.models.generate_content(
+    response = client.models.generate_content_stream(
+        
         model="gemini-3.6-flash",
         contents=prompt,
         config=types.GenerateContentConfig(
@@ -25,10 +26,10 @@ def generate(prompt: str) -> str:
             ),
         ),
     )
+    for chunk in response:
+        print(chunk.text, end="", flush=True)
 
-    return response.text.stream()
 
-
-# if __name__ == "__main__":
-#     prompt = input("Enter your prompt: ")
-#     print(generate(prompt))
+if __name__ == "__main__":
+    prompt = input("Enter your prompt: ")
+    generate(prompt)
