@@ -7,9 +7,10 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-# # define structure of stock price tool
-# # name it stock price tool
-# # define the python structure
+# --------------------------------
+# Stock price tool
+# --------------------------------
+
 stock_price_tool = {
     "name": "stock_price",
     "description": "Get the latest price of a stock by its ticker symbol, e.g. AAPL.",
@@ -23,9 +24,6 @@ stock_price_tool = {
     },
 }
 
-# # now the actual tool with fucntion name stock_price
-# # having arguments as stock name that it'll call
-# # we have api stored in .env for stock price
 def stock_price(stock_name):
     api_key = os.getenv("Stock_api")
 
@@ -37,14 +35,14 @@ def stock_price(stock_name):
         f"&apikey={api_key}"
     )
 
-    response = requests.get(url, timeout=10)     # ← unchanged
-    data = response.json()                       # ← unchanged
+    response = requests.get(url, timeout=10)
+    data = response.json()
 
-    prices = data.get("Time Series (5min)")      # ← new: take the price list
+    prices = data.get("Time Series (5min)")
     if not prices:
-        return {"error": data}                   # wrong symbol, bad key or rate limit
+        return {"error": data}
 
-    latest_time = max(prices)                    # newest timestamp
+    latest_time = max(prices)
     return {
         "stock": stock_name.upper(),
         "time": latest_time,
@@ -52,7 +50,10 @@ def stock_price(stock_name):
     }
 
 
-# # same do with currency conversion tool
+# --------------------------------
+# Currency conversion tool
+# --------------------------------
+
 currency_conversion_tool = {
     "name": "currency_conversion",
     "description": "Convert an amount from one currency to another, e.g. 100 USD to INR.",
@@ -80,7 +81,7 @@ def currency_conversion(amount, from_currency, to_currency):
     if data.get("result") != "success":
         return {"error": data.get("error-type", "conversion failed")}
 
-    rates = data["conversion_rates"]  # rates from from_currency to every other currency
+    rates = data["conversion_rates"]
     if to_currency not in rates:
         return {"error": f"Unknown currency {to_currency}"}
 
@@ -94,9 +95,9 @@ def currency_conversion(amount, from_currency, to_currency):
     }
 
 
-# # for expense calculator tool.. we will code .. no api required .. where we'll tell what to add
-# #     in expenses and from where money came .. so that it can add or subtract
-# # basic usage
+# --------------------------------
+# Expense calculator tool
+# --------------------------------
 
 expense_calculator_tool = {
     "name": "expense_calculator",
@@ -127,6 +128,10 @@ expense_calculator_tool = {
 }
 
 
+# --------------------------------
+# Income and expense categories
+# --------------------------------
+
 class IncomeSource(Enum):
     SALARY = "salary"
     FREELANCE = "freelance"
@@ -150,19 +155,15 @@ class ExpenseCategory(Enum):
 
 transactions = []
 def expense_calculator(action, amount, category, description=""):
-
-    # Check that the category matches the action
     if action == "income" and category not in [x.value for x in IncomeSource]:
         return {"error": "Invalid income category"}
 
     if action == "expense" and category not in [x.value for x in ExpenseCategory]:
         return {"error": "Invalid expense category"}
 
-    # Expenses reduce the balance
     if action == "expense":
         amount = -amount
 
-    # Save transaction
     transactions.append({
         "action": action,
         "amount": amount,
@@ -170,7 +171,6 @@ def expense_calculator(action, amount, category, description=""):
         "description": description
     })
 
-    # Calculate balance
     balance = sum(transaction["amount"] for transaction in transactions)
 
     return {
