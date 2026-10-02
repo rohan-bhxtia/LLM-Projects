@@ -97,6 +97,36 @@ def currency_conversion(amount, from_currency, to_currency):
 # # for expense calculator tool.. we will code .. no api required .. where we'll tell what to add
 # #     in expenses and from where money came .. so that it can add or subtract
 # # basic usage
+
+expense_calculator_tool = {
+    "name": "expense_calculator",
+    "description": "Record income or an expense and return the current balance.",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "action": {
+                "type": "string",
+                "enum": ["income", "expense"],
+                "description": "Use income when money is received and expense when money is spent."
+            },
+            "amount": {
+                "type": "number",
+                "description": "The amount of money."
+            },
+            "category": {
+                "type": "string",
+                "description": "For income: salary, freelance, business, investment, gift, or other. For expenses: food, rent, travel, shopping, bills, health, entertainment, education, or other."
+            },
+            "description": {
+                "type": "string",
+                "description": "Optional extra details about the transaction."
+            }
+        },
+        "required": ["action", "amount", "category"]
+    }
+}
+
+
 class IncomeSource(Enum):
     SALARY = "salary"
     FREELANCE = "freelance"
@@ -118,42 +148,32 @@ class ExpenseCategory(Enum):
     OTHER = "other"
 
 
-INCOME_SOURCES = [source.value for source in IncomeSource]
-EXPENSE_CATEGORIES = [category.value for category in ExpenseCategory]
-
-
-expense_calculator_tool = {
-    "name": "expense_calculator",
-    "description": "Add money (income, with where it came from) or subtract money (expense, with what it was spent on) and return the current balance.",
-    "parameters": {
-        "type": "object",
-        "properties": {
-            "action": {"type": "string", "enum": ["income", "expense"], "description": "income adds money, expense subtracts money"},
-            "amount": {"type": "number", "description": "Amount of money"},
-            "category": {
-                "type": "string",
-                "enum": sorted(set(INCOME_SOURCES + EXPENSE_CATEGORIES)),
-                "description": f"For income, where money came from: {', '.join(INCOME_SOURCES)}. "
-                               f"For expense, what it was spent on: {', '.join(EXPENSE_CATEGORIES)}",
-            },
-            "description": {"type": "string", "description": "Extra details, e.g. 'Dominos pizza' or 'October salary'"},
-        },
-        "required": ["action", "amount", "category"],
-    },
-}
-
 transactions = []
-
 def expense_calculator(action, amount, category, description=""):
-    if action == "income" and category not in INCOME_SOURCES:
-        return {"error": f"income category must be one of {INCOME_SOURCES}"}
-    if action == "expense" and category not in EXPENSE_CATEGORIES:
-        return {"error": f"expense category must be one of {EXPENSE_CATEGORIES}"}
 
+    # Check that the category matches the action
+    if action == "income" and category not in [x.value for x in IncomeSource]:
+        return {"error": "Invalid income category"}
+
+    if action == "expense" and category not in [x.value for x in ExpenseCategory]:
+        return {"error": "Invalid expense category"}
+
+    # Expenses reduce the balance
     if action == "expense":
         amount = -amount
-    transactions.append({"action": action, "amount": amount, "category": category, "description": description})
-    balance = sum(t["amount"] for t in transactions)
-    return {"transactions": transactions, "balance": balance}
 
-# # just define these things ... nothing else we'll just make toools here and we'll run the final code from somewhere else
+    # Save transaction
+    transactions.append({
+        "action": action,
+        "amount": amount,
+        "category": category,
+        "description": description
+    })
+
+    # Calculate balance
+    balance = sum(transaction["amount"] for transaction in transactions)
+
+    return {
+        "balance": balance,
+        "transactions": transactions
+    }
