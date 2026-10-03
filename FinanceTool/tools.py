@@ -101,7 +101,7 @@ def currency_conversion(amount, from_currency, to_currency):
 
 expense_calculator_tool = {
     "name": "expense_calculator",
-    "description": "Record income or an expense and return the current balance.",
+    "description": "Record one income or expense transaction. Returns only that transaction and the remaining balance. Call it once per transaction.",
     "parameters": {
         "type": "object",
         "properties": {
@@ -171,9 +171,34 @@ def expense_calculator(action, amount, category, description=""):
         "description": description
     })
 
-    balance = sum(transaction["amount"] for transaction in transactions)
-
+    # Only return the transaction we just recorded, not the whole history.
+    # Sending every transaction back each time wastes tokens and makes the
+    # model list them all in its answer.
     return {
-        "balance": balance,
-        "transactions": transactions
+        "transaction": transactions[-1],
+        "balance": get_balance()
+    }
+
+
+def get_balance():
+    return sum(transaction["amount"] for transaction in transactions)
+
+
+# --------------------------------
+# Show transactions tool
+# --------------------------------
+
+show_transactions_tool = {
+    "name": "show_transactions",
+    "description": "Show all recorded income and expense transactions and the current balance. Use only when the user asks to see their transactions, history or statement.",
+    "parameters": {
+        "type": "object",
+        "properties": {},
+    },
+}
+
+def show_transactions():
+    return {
+        "transactions": transactions,
+        "balance": get_balance()
     }

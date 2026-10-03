@@ -21,7 +21,8 @@ BOT works out which tool to use, runs it and gives you a clear answer.
 |---|---|---|
 | 📈 **Stock price** | *"What's Apple trading at?"* | Gets the latest price from Alpha Vantage |
 | 💱 **Currency conversion** | *"Convert 250 USD to INR"* | Uses live exchange rates from ExchangeRate-API |
-| 🧾 **Expense calculator** | *"I spent 450 on food at Dominos"* | Records income and expenses by category and keeps a running balance |
+| 🧾 **Expense calculator** | *"I spent 450 on food at Dominos"* | Records income and expenses by category, then shows that transaction and your remaining balance |
+| 📋 **Show transactions** | *"Show all my transactions"* | Lists every recorded transaction and your current balance |
 
 You don't need to remember any commands. Just chat, and BOT picks the right tool.
 
@@ -41,6 +42,12 @@ BOT: Added ₹50,000 salary. Your balance is ₹50,000.
 You: spent 1200 on an uber ride
 [Using expense_calculator: {'action': 'expense', 'amount': 1200, 'category': 'travel', 'description': 'uber ride'}]
 BOT: Recorded ₹1,200 on travel. Your balance is ₹48,800.
+
+You: show me all my transactions
+[Using show_transactions: {}]
+BOT: 1. Income: ₹50,000 (salary)
+     2. Expense: ₹1,200 (travel, uber ride)
+     Balance: ₹48,800.
 
 You: how much is 100 euros in rupees?
 [Using currency_conversion: {'amount': 100, 'from_currency': 'EUR', 'to_currency': 'INR'}]
@@ -85,7 +92,7 @@ flowchart LR
 ### 1. Install the dependencies
 
 ```bash
-pip install google-genai python-dotenv requests
+pip install -r requirements.txt
 ```
 
 ### 2. Get your API keys (all have free plans)
@@ -146,6 +153,7 @@ The chat recovers from common problems instead of crashing:
 FinanceTool/
 ├── tools.py      # tool structures + the functions that do the work
 ├── run.py        # Gemini chat loop with error handling
+├── requirements.txt  # Python packages the project needs
 ├── .env          # your API keys (not committed)
 └── readme.md
 ```

@@ -10,7 +10,7 @@ import tools
 
 load_dotenv()
 
-MODEL = "gemini-3.5-flash"
+MODEL = "gemini-3.6-flash"
 
 MAX_TOOL_ROUNDS = 5
 
@@ -47,6 +47,12 @@ gemini_tools = types.Tool(
             description=tools.expense_calculator_tool["description"],
             parameters_json_schema=tools.expense_calculator_tool["parameters"],
         ),
+
+        types.FunctionDeclaration(
+            name=tools.show_transactions_tool["name"],
+            description=tools.show_transactions_tool["description"],
+            parameters_json_schema=tools.show_transactions_tool["parameters"],
+        ),
     ]
 )
 
@@ -71,6 +77,9 @@ chat = client.chats.create(
         system_instruction=(
             "Your name is BOT, a personal finance assistant. "
             "Use the available tools when necessary. "
+            "After recording income or expenses, only mention the transaction(s) "
+            "just recorded and the remaining balance. "
+            "List all transactions only when the user asks for them. "
             "Answer clearly and briefly."
         ),
     ),
@@ -91,6 +100,9 @@ def run_tool(name, args):
 
         if name == "expense_calculator":
             return tools.expense_calculator(**args)
+
+        if name == "show_transactions":
+            return tools.show_transactions()
 
         return {"error": f"Unknown tool: {name}"}
 
